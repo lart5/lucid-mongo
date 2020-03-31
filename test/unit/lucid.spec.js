@@ -24,9 +24,9 @@ const DatabaseManager = require('../../src/Database/Manager')
 const VanillaSerializer = require('../../src/LucidMongo/Serializers/Vanilla')
 const _ = require('lodash')
 
-test.group('Model', (group) => {
+test.group('MongoModel', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -34,21 +34,21 @@ test.group('Model', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
-    await ioc.use('Database').collection('my_users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('my_users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -290,7 +290,7 @@ test.group('Model', (group) => {
       await user.save()
     } catch ({ message }) {
       assert.equal(message, 'Something bad happened')
-      const users = await ioc.use('Database').collection('users').find()
+      const users = await ioc.use('MongoDatabase').collection('users').find()
       assert.lengthOf(users, 0)
     }
   })
@@ -305,7 +305,7 @@ test.group('Model', (group) => {
     await user.save()
     user.username = 'nikk'
     await user.save()
-    const users = await ioc.use('Database').collection('users').find()
+    const users = await ioc.use('MongoDatabase').collection('users').find()
     assert.lengthOf(users, 1)
     assert.equal(users[0].username, user.username)
     assert.equal(String(users[0]._id), String(user.primaryKeyValue))
@@ -396,7 +396,7 @@ test.group('Model', (group) => {
     class User extends Model {
     }
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const users = await User.query().fetch()
     assert.instanceOf(users, VanillaSerializer)
   })
@@ -436,7 +436,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const users = await User.query().fetch()
     const user = users.first()
     user.username = 'nikk'
@@ -501,9 +501,9 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     await User.query().where('username', 'virk').update({ login_at: new Date() })
-    const users = await ioc.use('Database').collection('users').find()
+    const users = await ioc.use('MongoDatabase').collection('users').find()
     assert.equal(moment(users[0].updated_at).format('YYYY-MM-DD'), moment().format('YYYY-MM-DD'))
   })
 
@@ -519,7 +519,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.query().where('username', 'virk').fetch()
     assert.equal(users.first().toObject().full_name, 'Mr. virk')
   })
@@ -660,7 +660,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    const result = await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    const result = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.find(result.insertedIds[0])
     assert.instanceOf(user, User)
     assert.equal(user.username, 'virk')
@@ -673,7 +673,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.findBy('username', 'virk')
     assert.instanceOf(user, User)
     assert.equal(user.username, 'virk')
@@ -693,7 +693,7 @@ test.group('Model', (group) => {
       stack.push('afterFind')
     })
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     await User.findBy('username', 'virk')
     assert.deepEqual(stack, ['afterFind'])
   })
@@ -709,7 +709,7 @@ test.group('Model', (group) => {
       hookInstance = model
     })
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.findBy('username', 'virk')
     assert.deepEqual(hookInstance, user)
   })
@@ -720,7 +720,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const users = await User.all()
     assert.instanceOf(users, VanillaSerializer)
   })
@@ -731,7 +731,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.pick(1)
     assert.instanceOf(users, VanillaSerializer)
     assert.equal(users.first().username, 'virk')
@@ -743,7 +743,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.pickInverse(1)
     assert.instanceOf(users, VanillaSerializer)
     assert.equal(users.first().username, 'nikk')
@@ -755,7 +755,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const userIds = await User.ids()
     assert.lengthOf(userIds, 2)
   })
@@ -765,7 +765,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.pair('_id', 'username')
     assert.deepEqual(Object.values(users), ['virk', 'nikk'])
   })
@@ -775,7 +775,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.query().paginate(1, 1)
     assert.instanceOf(users, VanillaSerializer)
     assert.deepEqual(users.pages, { perPage: 1, total: helpers.formatNumber(2), page: 1, lastPage: 2 })
@@ -787,7 +787,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert([{ username: 'virk', name: 'virk' }, { username: 'nikk', name: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk', name: 'virk' }, { username: 'nikk', name: 'nikk' }])
     const users = await User.query({ select: 'username' }).paginate(1, 1)
     assert.instanceOf(users, VanillaSerializer)
     assert.deepEqual(users.pages, { perPage: 1, total: helpers.formatNumber(2), page: 1, lastPage: 2 })
@@ -801,7 +801,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const user = await User.first()
     assert.instanceOf(user, User)
     assert.equal(user.username, 'virk')
@@ -813,7 +813,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    const result = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const user = await User.find(result.insertedIds[0])
     assert.instanceOf(user, User)
     assert.equal(user.username, 'virk')
@@ -850,7 +850,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.first()
     user.username = 'nikk'
     await user.save()
@@ -871,7 +871,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     await User.query().where('username', 'virk').update({ username: 'nikk' })
     const keys = formatting.map((item) => item.key)
     const values = formatting.map((item) => moment(item.value).isValid())
@@ -884,7 +884,7 @@ test.group('Model', (group) => {
     }
 
     User._bootIfNotBooted()
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const updates = { username: 'nikk' }
     await User.query().where('username', 'virk').update(updates)
     assert.deepEqual(updates, { username: 'nikk' })
@@ -961,7 +961,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     await User.query().where('username', 'virk').update({ username: 'nikk' })
     const users = await User.query().pair('_id', 'updated_at')
     assert.deepEqual(formatting, [])
@@ -981,7 +981,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database')
+    await ioc.use('MongoDatabase')
       .collection('users')
       .insert({ username: 'virk', created_at: new Date(), updated_at: new Date() })
 
@@ -1009,7 +1009,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database')
+    await ioc.use('MongoDatabase')
       .collection('users')
       .insert({ username: 'virk', created_at: new Date(), updated_at: new Date() })
 
@@ -1037,7 +1037,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database')
+    await ioc.use('MongoDatabase')
       .collection('users')
       .insert({ username: 'virk', created_at: new Date(), updated_at: new Date() })
 
@@ -1066,7 +1066,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database')
+    await ioc.use('MongoDatabase')
       .collection('users')
       .insert({ username: 'virk', created_at: new Date(), updated_at: new Date(), login_at: new Date() })
 
@@ -1224,7 +1224,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.findByOrFail('username', 'virk')
     assert.instanceOf(user, User)
   })
@@ -1332,7 +1332,7 @@ test.group('Model', (group) => {
     user.username = 'virk'
     await user.save()
     assert.isUndefined(user.type)
-    await ioc.use('Database').collection('users').update({ type: 'admin' })
+    await ioc.use('MongoDatabase').collection('users').update({ type: 'admin' })
     await user.reload()
     assert.equal(user.type, 'admin')
   })
@@ -1368,7 +1368,7 @@ test.group('Model', (group) => {
     await user.save()
     assert.isUndefined(user.type)
 
-    await ioc.use('Database').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
     try {
       await user.reload()
     } catch ({ message }) {
@@ -1425,7 +1425,7 @@ test.group('Model', (group) => {
     }
 
     User.addHook('afterFetch', fn)
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     await User.all('username', 'virk')
   })
 
@@ -1449,7 +1449,7 @@ test.group('Model', (group) => {
 
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'foo' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'foo' })
     const user = await User.findOrCreate({ username: 'foo' })
     assert.isTrue(user.$persisted)
     assert.equal(user.username, 'foo')
@@ -1513,7 +1513,7 @@ test.group('Model', (group) => {
 
 test.group('Lucid | Query builder', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -1521,21 +1521,21 @@ test.group('Lucid | Query builder', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
-    await ioc.use('Database').collection('my_users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('my_users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -1664,7 +1664,7 @@ test.group('Lucid | Query builder', (group) => {
 
 test.group('Lucid | Query update', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -1672,21 +1672,21 @@ test.group('Lucid | Query update', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
-    await ioc.use('Database').collection('my_users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('my_users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -1700,7 +1700,7 @@ test.group('Lucid | Query update', (group) => {
     class User extends Model { }
     User._bootIfNotBooted()
     const users = [{ name: 'vik', isActive: true }, { name: 'nik', isActive: true }]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     await User.query().update({ isActive: false })
     const newUsers = await User.where({ isActive: false }).fetch()
     assert.lengthOf(newUsers.rows, 2)
@@ -1710,7 +1710,7 @@ test.group('Lucid | Query update', (group) => {
     class User extends Model { }
     User._bootIfNotBooted()
     const users = [{ name: 'vik' }, { name: 'vik' }, { name: 'nik' }, { name: 'nik' }]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     await User.query().where({ name: 'vik' }).update({ isActive: true })
     const newUsers = await User.where({ isActive: true }).fetch()
     assert.lengthOf(newUsers.rows, 2)
@@ -1719,7 +1719,7 @@ test.group('Lucid | Query update', (group) => {
 
 test.group('Lucid | Query delete', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -1727,21 +1727,21 @@ test.group('Lucid | Query delete', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
-    await ioc.use('Database').collection('my_users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('my_users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -1755,7 +1755,7 @@ test.group('Lucid | Query delete', (group) => {
     class User extends Model { }
     User._bootIfNotBooted()
     const users = [{ name: 'vik', isActive: true }, { name: 'nik', isActive: true }]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     await User.query().delete()
     const newUsers = await User.all()
     assert.lengthOf(newUsers.rows, 0)
@@ -1765,7 +1765,7 @@ test.group('Lucid | Query delete', (group) => {
     class User extends Model { }
     User._bootIfNotBooted()
     const users = [{ name: 'vik' }, { name: 'vik' }, { name: 'nik' }, { name: 'nik' }]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     await User.query().where({ name: 'vik' }).delete()
     const newUsers = await User.all()
     assert.lengthOf(newUsers.rows, 2)
@@ -1787,14 +1787,14 @@ test.group('Lucid | Query delete', (group) => {
     }
 
     User.addHook('afterPaginate', fn)
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     await User.query().paginate()
   })
 })
 
 test.group('Lucid | Aggregate', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -1802,21 +1802,21 @@ test.group('Lucid | Aggregate', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
-    await ioc.use('Database').collection('my_users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('my_users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -1835,7 +1835,7 @@ test.group('Lucid | Aggregate', (group) => {
       { name: 'nik', value: 20 },
       { name: 'nik', value: 10 }
     ]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const count = await User.count()
     assert.equal(count, 4)
     const count2 = await User.count('name')
@@ -1857,7 +1857,7 @@ test.group('Lucid | Aggregate', (group) => {
       { name: 'nik', value: 20, scope: 2 },
       { name: 'nik', value: 10, scope: 2 }
     ]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const sum = await User.sum('value')
     assert.equal(sum, 50)
     const sum2 = await User.sum('value', 'name')
@@ -1879,7 +1879,7 @@ test.group('Lucid | Aggregate', (group) => {
       { name: 'nik', value: 20, scope: 2 },
       { name: 'nik', value: 10, scope: 2 }
     ]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const avg = await User.avg('value')
     assert.equal(avg, 12.5)
     const avg2 = await User.avg('value', 'name')
@@ -1901,7 +1901,7 @@ test.group('Lucid | Aggregate', (group) => {
       { name: 'nik', value: 30, scope: 2 },
       { name: 'nik', value: 40, scope: 2 }
     ]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const max = await User.max('value')
     assert.equal(max, 40)
     const max2 = await User.max('value', 'name')
@@ -1923,7 +1923,7 @@ test.group('Lucid | Aggregate', (group) => {
       { name: 'nik', value: 30, scope: 2 },
       { name: 'nik', value: 40, scope: 2 }
     ]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const min = await User.min('value')
     assert.equal(min, 10)
     const min2 = await User.min('value', 'name')
@@ -1945,7 +1945,7 @@ test.group('Lucid | Aggregate', (group) => {
       { name: 'nik', value: 30, scope: 2 },
       { name: 'nik', value: 40, scope: 2 }
     ]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const $match = { name: 'nik' }
     const $group = { _id: '', sum: { $sum: '$value' } }
     const result = await User.query().aggregate(([{ $match }, { $group }]))
@@ -1956,7 +1956,15 @@ test.group('Lucid | Aggregate', (group) => {
     class User extends Model { }
     User._bootIfNotBooted()
     const users = [{ name: 'vik', score: 10 }, { name: 'vik', score: 30 }, { name: 'nik', score: 30 }, { name: 'nik', score: 40 }]
-    await ioc.use('Database').collection('users').insert(users)
+    await ioc.use('MongoDatabase').collection('users').insert(users)
+    const names = await User.distinct('name')
+    assert.deepEqual(names, ['vik', 'nik'])
+    const names2 = await User.where({ score: { $lt: 30 } }).distinct('name')
+    assert.deepEqual(names2, ['vik'])
+  })
+})
+e: 10 }, { name: 'vik', score: 30 }, { name: 'nik', score: 30 }, { name: 'nik', score: 40 }]
+    await ioc.use('MongoDatabase').collection('users').insert(users)
     const names = await User.distinct('name')
     assert.deepEqual(names, ['vik', 'nik'])
     const names2 = await User.where({ score: { $lt: 30 } }).distinct('name')

@@ -69,7 +69,7 @@ module.exports = function (configMap) {
   const Migration = require('./src/Migration')
   const Factory = require('./src/Factory')
   const db = new Database(config)
-  ioc.bind('Adonis/Src/Database', db)
+  ioc.bind('Adonis/Src/MongoDatabase', db)
 
   return {
     db,

@@ -490,7 +490,7 @@ After get from db it will be retransformed to
 
 ### Use mquery builder
 ```js
-  const Database = use('Database')
+  const Database = use('MongoDatabase')
   const db = await Database.connect('mongodb')
 
   const users = await db.collection('users').find()
@@ -505,7 +505,7 @@ After get from db it will be retransformed to
 ### Get mongodb client object
 In case the query builder does not match your requirement you can get mongodbClient to do your custom query
 ```js
-  const Database = use('Database')
+  const Database = use('MongoDatabase')
   const mongoClient = await Database.connect()
   const result = await mongoClient.collection('inventory').find( { size: { h: 14, w: 21, uom: "cm" } } ).toArray()
 ```

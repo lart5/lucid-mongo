@@ -20,7 +20,7 @@ const CE = require('../Exceptions')
  * @singleton
  * @alias Migration
  * @group Database
- * @uses (['Adonis/Src/Config', 'Adonis/Src/Database'])
+ * @uses (['Adonis/Src/Config', 'Adonis/Src/MongoDatabase'])
  *
  * @class Migration
  * @constructor

@@ -26,7 +26,7 @@ const DatabaseManager = require('../../src/Database/Manager')
 
 test.group('Field date format', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -34,20 +34,20 @@ test.group('Field date format', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -111,7 +111,7 @@ test.group('Field date format', (group) => {
     })
     assert.equal(moment.isMoment(user.$attributes.last_login), true)
     assert.equal(moment.utc('2018-01-01').isSame(user.last_login), true)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.last_login, Date)
     assert.equal(moment.utc('2018-01-01').isSame(newUser.last_login), true)
   })
@@ -131,7 +131,7 @@ test.group('Field date format', (group) => {
     await user.save()
     assert.equal(moment.isMoment(user.$attributes.last_login), true)
     assert.equal(moment.utc('2018-01-02').isSame(user.last_login), true)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.last_login, Date)
     assert.equal(moment.utc('2018-01-02').isSame(newUser.last_login), true)
   })
@@ -219,7 +219,7 @@ test.group('Field date format', (group) => {
 
 test.group('Field geometry format', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -227,20 +227,20 @@ test.group('Field geometry format', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -320,7 +320,7 @@ test.group('Field geometry format', (group) => {
     assert.instanceOf(user.$attributes.location, GeoPoint)
     assert.equal(user.$attributes.location.latitude, 1)
     assert.equal(user.$attributes.location.longitude, 2)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.location, Object)
     assert.equal(newUser.location.type, 'Point')
     assert.deepEqual(newUser.location.coordinates, [2, 1])
@@ -348,7 +348,7 @@ test.group('Field geometry format', (group) => {
     assert.instanceOf(user.$attributes.location, GeoPoint)
     assert.equal(user.$attributes.location.latitude, 2)
     assert.equal(user.$attributes.location.longitude, 3)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.location, Object)
     assert.equal(newUser.location.type, 'Point')
     assert.deepEqual(newUser.location.coordinates, [3, 2])
@@ -384,7 +384,7 @@ test.group('Field geometry format', (group) => {
 
 test.group('Field boolean format', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -392,20 +392,20 @@ test.group('Field boolean format', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -465,7 +465,7 @@ test.group('Field boolean format', (group) => {
       is_active: 1
     })
     assert.equal(user.$attributes.is_active === true, true)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.equal(newUser.is_active === true, true)
   })
 
@@ -483,7 +483,7 @@ test.group('Field boolean format', (group) => {
     user.is_active = 1
     await user.save()
     assert.equal(user.$attributes.is_active === true, true)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.equal(newUser.is_active === true, true)
   })
 
@@ -525,7 +525,7 @@ test.group('Field boolean format', (group) => {
 
 test.group('Field ObjectID format', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -533,20 +533,20 @@ test.group('Field ObjectID format', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -652,7 +652,7 @@ test.group('Field ObjectID format', (group) => {
     })
     assert.instanceOf(user.$attributes.group_id, ObjectID)
     assert.equal(String(user.$attributes.group_id), '5a40077430f075256427a147')
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.group_id, ObjectID)
     assert.equal(String(newUser.group_id), '5a40077430f075256427a147')
   })
@@ -672,7 +672,7 @@ test.group('Field ObjectID format', (group) => {
     await user.save()
     assert.instanceOf(user.$attributes.group_id, ObjectID)
     assert.equal(String(user.$attributes.group_id), '5a40077430f075256427a148')
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.group_id, ObjectID)
     assert.equal(String(newUser.group_id), '5a40077430f075256427a148')
   })
@@ -692,7 +692,7 @@ test.group('Field ObjectID format', (group) => {
     await user.save()
     assert.instanceOf(user.$attributes.group_id, ObjectID)
     assert.equal(String(user.$attributes.group_id), '5a40077430f075256427a148')
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.instanceOf(newUser.group_id, ObjectID)
     assert.equal(String(newUser.group_id), '5a40077430f075256427a148')
   })
@@ -782,7 +782,7 @@ test.group('Field ObjectID format', (group) => {
     })
 
     assert.equal(user.$attributes.group_id, null)
-    const newUser = await ioc.use('Database').collection('users').findOne()
+    const newUser = await ioc.use('MongoDatabase').collection('users').findOne()
     assert.equal(newUser.group_id, null)
   })
 })

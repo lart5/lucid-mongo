@@ -23,7 +23,7 @@ const VanillaSerializer = require('../../src/LucidMongo/Serializers/Vanilla')
 
 test.group('Relations | Has Many Through - Has Many ', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -31,21 +31,21 @@ test.group('Relations | Has Many Through - Has Many ', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('countries').delete()
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
-    await ioc.use('Adonis/Src/Database').collection('posts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('countries').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('posts').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -75,9 +75,9 @@ test.group('Relations | Has Many Through - Has Many ', (group) => {
     Country._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const rsCountry = await ioc.use('Database').collection('countries').insert({ name: 'India' })
-    const rsUser = await ioc.use('Database').collection('users').insert({ country_id: rsCountry.insertedIds[0], username: 'virk' })
-    await ioc.use('Database').collection('posts').insert({ user_id: rsUser.insertedIds[0], title: 'Adonis 101' })
+    const rsCountry = await ioc.use('MongoDatabase').collection('countries').insert({ name: 'India' })
+    const rsUser = await ioc.use('MongoDatabase').collection('users').insert({ country_id: rsCountry.insertedIds[0], username: 'virk' })
+    await ioc.use('MongoDatabase').collection('posts').insert({ user_id: rsUser.insertedIds[0], title: 'Adonis 101' })
 
     const country = await Country.find(rsCountry.insertedIds[0])
     const posts = await country.posts().fetch()
@@ -105,9 +105,9 @@ test.group('Relations | Has Many Through - Has Many ', (group) => {
     Country._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const rsCountry = await ioc.use('Database').collection('countries').insert({ name: 'India' })
-    const rsUser = await ioc.use('Database').collection('users').insert({ country_id: rsCountry.insertedIds[0], username: 'virk' })
-    await ioc.use('Database').collection('posts').insert({ user_id: rsUser.insertedIds[0], title: 'Adonis 101' })
+    const rsCountry = await ioc.use('MongoDatabase').collection('countries').insert({ name: 'India' })
+    const rsUser = await ioc.use('MongoDatabase').collection('users').insert({ country_id: rsCountry.insertedIds[0], username: 'virk' })
+    await ioc.use('MongoDatabase').collection('posts').insert({ user_id: rsUser.insertedIds[0], title: 'Adonis 101' })
 
     const countries = await Country.query().with('posts', (builder) => {
       builder.selectThrough('_id')
@@ -123,7 +123,7 @@ test.group('Relations | Has Many Through - Has Many ', (group) => {
 
 test.group('Relations | Has Many Through - Belongs To', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -131,20 +131,20 @@ test.group('Relations | Has Many Through - Belongs To', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('countries').delete()
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
-    await ioc.use('Adonis/Src/Database').collection('profiles').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('countries').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('profiles').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -174,14 +174,14 @@ test.group('Relations | Has Many Through - Belongs To', (group) => {
     Country._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rsCountry = await ioc.use('Database').collection('countries').insert([{ name: 'India' }, { name: 'Uk' }])
+    const rsCountry = await ioc.use('MongoDatabase').collection('countries').insert([{ name: 'India' }, { name: 'Uk' }])
 
-    const rsUser = await ioc.use('Database').collection('users').insert([
+    const rsUser = await ioc.use('MongoDatabase').collection('users').insert([
       { username: 'virk' },
       { username: 'nikk' }
     ])
 
-    await ioc.use('Database').collection('profiles').insert([
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rsUser.insertedIds[0], profile_name: 'Virk', country_id: rsCountry.insertedIds[0] },
       { user_id: rsUser.insertedIds[0], profile_name: 'Virk', country_id: rsCountry.insertedIds[1] },
       { user_id: rsUser.insertedIds[1], profile_name: 'Nikk', country_id: rsCountry.insertedIds[0] }
@@ -221,14 +221,14 @@ test.group('Relations | Has Many Through - Belongs To', (group) => {
     Country._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rsCountry = await ioc.use('Database').collection('countries').insert([{ name: 'India' }, { name: 'Uk' }])
+    const rsCountry = await ioc.use('MongoDatabase').collection('countries').insert([{ name: 'India' }, { name: 'Uk' }])
 
-    const rsUser = await ioc.use('Database').collection('users').insert([
+    const rsUser = await ioc.use('MongoDatabase').collection('users').insert([
       { username: 'virk' },
       { username: 'nikk' }
     ])
 
-    await ioc.use('Database').collection('profiles').insert([
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rsUser.insertedIds[0], profile_name: 'Virk', country_id: rsCountry.insertedIds[0] },
       { user_id: rsUser.insertedIds[0], profile_name: 'Virk', country_id: rsCountry.insertedIds[1] },
       { user_id: rsUser.insertedIds[1], profile_name: 'Nikk', country_id: rsCountry.insertedIds[0] }
@@ -243,7 +243,7 @@ test.group('Relations | Has Many Through - Belongs To', (group) => {
 
 test.group('Relations | Has Many Through - Belongs To Many', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -251,22 +251,22 @@ test.group('Relations | Has Many Through - Belongs To Many', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('categories').delete()
-    await ioc.use('Adonis/Src/Database').collection('sections').delete()
-    await ioc.use('Adonis/Src/Database').collection('posts').delete()
-    await ioc.use('Adonis/Src/Database').collection('post_section').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('categories').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('sections').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('posts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('post_section').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -296,13 +296,13 @@ test.group('Relations | Has Many Through - Belongs To Many', (group) => {
     Section._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const rsCategory = await ioc.use('Database').collection('categories').insert([{ name: 'Sql' }, { name: 'Javascript' }])
-    const rsSection = await ioc.use('Database').collection('sections').insert([
+    const rsCategory = await ioc.use('MongoDatabase').collection('categories').insert([{ name: 'Sql' }, { name: 'Javascript' }])
+    const rsSection = await ioc.use('MongoDatabase').collection('sections').insert([
       { name: 'Loops', category_id: rsCategory.insertedIds[1] },
       { name: 'Conditionals', category_id: rsCategory.insertedIds[1] }
     ])
-    const rsPost = await ioc.use('Database').collection('posts').insert({ title: 'For each loop' })
-    await ioc.use('Database').collection('post_section').insert({ post_id: rsPost.insertedIds[0], section_id: rsSection.insertedIds[0] })
+    const rsPost = await ioc.use('MongoDatabase').collection('posts').insert({ title: 'For each loop' })
+    await ioc.use('MongoDatabase').collection('post_section').insert({ post_id: rsPost.insertedIds[0], section_id: rsSection.insertedIds[0] })
 
     const js = await Category.find(rsCategory.insertedIds[1])
     const posts = await js.posts().fetch()
@@ -330,17 +330,17 @@ test.group('Relations | Has Many Through - Belongs To Many', (group) => {
     Section._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const rsCategory = await ioc.use('Database').collection('categories').insert([{ name: 'Sql' }, { name: 'Javascript' }])
+    const rsCategory = await ioc.use('MongoDatabase').collection('categories').insert([{ name: 'Sql' }, { name: 'Javascript' }])
 
-    const rsSection = await ioc.use('Database').collection('sections').insert([
+    const rsSection = await ioc.use('MongoDatabase').collection('sections').insert([
       { name: 'Loops', category_id: rsCategory.insertedIds[1] },
       { name: 'Conditionals', category_id: rsCategory.insertedIds[1] },
       { name: 'Transactions', category_id: rsCategory.insertedIds[0] }
     ])
 
-    const rsPost = await ioc.use('Database').collection('posts').insert([{ title: 'For each loop' }, { title: 'Transactions 101' }])
+    const rsPost = await ioc.use('MongoDatabase').collection('posts').insert([{ title: 'For each loop' }, { title: 'Transactions 101' }])
 
-    await ioc.use('Database').collection('post_section').insert([
+    await ioc.use('MongoDatabase').collection('post_section').insert([
       { post_id: rsPost.insertedIds[0], section_id: rsSection.insertedIds[0] },
       { post_id: rsPost.insertedIds[1], section_id: rsSection.insertedIds[2] }
     ])
@@ -374,17 +374,17 @@ test.group('Relations | Has Many Through - Belongs To Many', (group) => {
     Section._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const rsCategory = await ioc.use('Database').collection('categories').insert([{ name: 'Sql' }, { name: 'Javascript' }])
+    const rsCategory = await ioc.use('MongoDatabase').collection('categories').insert([{ name: 'Sql' }, { name: 'Javascript' }])
 
-    const rsSection = await ioc.use('Database').collection('sections').insert([
+    const rsSection = await ioc.use('MongoDatabase').collection('sections').insert([
       { name: 'Loops', category_id: rsCategory.insertedIds[1], is_active: true },
       { name: 'Conditionals', category_id: rsCategory.insertedIds[1], is_active: true },
       { name: 'Transactions', category_id: rsCategory.insertedIds[0] }
     ])
 
-    const rsPost = await ioc.use('Database').collection('posts').insert([{ title: 'For each loop' }, { title: 'Transactions 101' }])
+    const rsPost = await ioc.use('MongoDatabase').collection('posts').insert([{ title: 'For each loop' }, { title: 'Transactions 101' }])
 
-    await ioc.use('Database').collection('post_section').insert([
+    await ioc.use('MongoDatabase').collection('post_section').insert([
       { post_id: rsPost.insertedIds[0], section_id: rsSection.insertedIds[0] },
       { post_id: rsPost.insertedIds[1], section_id: rsSection.insertedIds[2] }
     ])

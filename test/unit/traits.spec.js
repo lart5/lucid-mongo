@@ -22,7 +22,7 @@ const QueryBuilder = require('../../src/LucidMongo/QueryBuilder')
 
 test.group('Traits', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -30,21 +30,21 @@ test.group('Traits', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
-    await ioc.use('Database').collection('users').delete()
-    await ioc.use('Database').collection('my_users').delete()
+    await ioc.use('MongoDatabase').collection('users').delete()
+    await ioc.use('MongoDatabase').collection('my_users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {

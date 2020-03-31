@@ -24,7 +24,7 @@ const _ = require('lodash')
 
 test.group('Relations | Refer Many', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -32,22 +32,22 @@ test.group('Relations | Refer Many', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
-    await ioc.use('Adonis/Src/Database').collection('posts').delete()
-    await ioc.use('Adonis/Src/Database').collection('pictures').delete()
-    await ioc.use('Adonis/Src/Database').collection('parts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('posts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('pictures').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('parts').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -70,11 +70,11 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png' },
       { file: 'images/file2.png' }
     ])
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const user = await User.find(rs.insertedIds[0])
     const pictures = await user.pictures().fetch()
@@ -95,11 +95,11 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png' },
       { file: 'images/file2.png' }
     ])
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const user = await User.find(rs.insertedIds[0])
     const picture = await user.pictures().first()
@@ -120,11 +120,11 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png' },
       { file: 'images/file2.png' }
     ])
-    await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const user = await User.query().with('pictures').first()
     assert.instanceOf(user.getRelated('pictures'), VanillaSerializer)
@@ -145,12 +145,12 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png', likes: 1000 },
       { file: 'images/file2.png', likes: 3000 }
     ])
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const users = await User.query().with('pictures', (builder) => {
       builder.where('likes', '>', 2000)
@@ -172,7 +172,7 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const users = await User.query().with('pictures').fetch()
     const user = users.first()
     assert.equal(user.getRelated('pictures').size(), 0)
@@ -191,11 +191,11 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png' },
       { file: 'images/file2.png' }
     ])
-    await ioc.use('Database').collection('users').insert([{ username: 'virk', picture_ids: [result.insertedIds[0]] }, { username: 'nirk', picture_ids: [result.insertedIds[1]] }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk', picture_ids: [result.insertedIds[0]] }, { username: 'nirk', picture_ids: [result.insertedIds[1]] }])
 
     const users = await User.query().with('pictures').fetch()
     const json = users.toJSON()
@@ -223,19 +223,19 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const partsResult = await ioc.use('Database').collection('parts').insert([
+    const partsResult = await ioc.use('MongoDatabase').collection('parts').insert([
       { part_name: 'wheels' },
       { part_name: 'engine' },
       { part_name: 'wheels' },
       { part_name: 'engine' }
     ])
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png', part_ids: [partsResult.insertedIds[0], partsResult.insertedIds[1]] },
       { file: 'images/file2.png', part_ids: [partsResult.insertedIds[2], partsResult.insertedIds[3]] }
     ])
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const user = await User.query().with('pictures.parts').first()
     assert.equal(user.getRelated('pictures').size(), 2)
@@ -263,19 +263,19 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const partsResult = await ioc.use('Database').collection('parts').insert([
+    const partsResult = await ioc.use('MongoDatabase').collection('parts').insert([
       { part_name: 'wheels' },
       { part_name: 'engine' },
       { part_name: 'wheels' },
       { part_name: 'engine' }
     ])
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png', part_ids: [partsResult.insertedIds[0], partsResult.insertedIds[1]] },
       { file: 'images/file2.png', part_ids: [partsResult.insertedIds[2], partsResult.insertedIds[3]] }
     ])
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const user = await User.query().with('pictures.parts', (builder) => builder.where('part_name', 'engine')).first()
     assert.equal(user.getRelated('pictures').size(), 2)
@@ -303,19 +303,19 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const partsResult = await ioc.use('Database').collection('parts').insert([
+    const partsResult = await ioc.use('MongoDatabase').collection('parts').insert([
       { part_name: 'wheels' },
       { part_name: 'engine' },
       { part_name: 'wheels' },
       { part_name: 'engine' }
     ])
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { likes: 1000, file: 'images/file1.png', part_ids: [partsResult.insertedIds[0], partsResult.insertedIds[1]] },
       { likes: 3000, file: 'images/file2.png', part_ids: [partsResult.insertedIds[2], partsResult.insertedIds[3]] }
     ])
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', picture_ids: _.toArray(result.insertedIds) })
 
     const user = await User.query().with('pictures', (builder) => {
       builder.where('likes', '>', 2000)
@@ -339,13 +339,13 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png' },
       { file: 'images/file2.png' },
       { file: 'images/file3.png' }
     ])
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk', picture_ids: _.toArray(result.insertedIds) }, { username: 'nikk', picture_ids: _.toArray(result.insertedIds) }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk', picture_ids: _.toArray(result.insertedIds) }, { username: 'nikk', picture_ids: _.toArray(result.insertedIds) }])
 
     const users = await User.query().with('pictures').paginate()
     assert.equal(users.size(), 2)
@@ -365,13 +365,13 @@ test.group('Relations | Refer Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('pictures').insert([
+    const result = await ioc.use('MongoDatabase').collection('pictures').insert([
       { file: 'images/file1.png' },
       { file: 'images/file2.png' },
       { file: 'images/file3.png' }
     ])
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk', picture_ids: [result.insertedIds[0], result.insertedIds[1]] }, { username: 'nikk', picture_ids: [result.insertedIds[2]] }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk', picture_ids: [result.insertedIds[0], result.insertedIds[1]] }, { username: 'nikk', picture_ids: [result.insertedIds[2]] }])
 
     const users = await User.query().with('pictures').paginate()
     const json = users.toJSON()
@@ -571,7 +571,7 @@ test.group('Relations | Refer Many', (group) => {
 
     await user.pictures().createMany([{ name: 'mercedes', model: '1992' }, { name: 'ferrari', model: '2002' }])
     await user.pictures().delete()
-    const pictures = await ioc.use('Database').collection('pictures').find()
+    const pictures = await ioc.use('MongoDatabase').collection('pictures').find()
     assert.lengthOf(pictures, 0)
   })
 
@@ -593,7 +593,7 @@ test.group('Relations | Refer Many', (group) => {
 
     await user.pictures().createMany([{ name: 'mercedes', model: '1992' }, { name: 'ferrari', model: '2002' }])
     await user.pictures().where('name', 'mercedes').delete()
-    const pictures = await ioc.use('Database').collection('pictures').find()
+    const pictures = await ioc.use('MongoDatabase').collection('pictures').find()
     assert.lengthOf(pictures, 1)
     assert.equal(pictures[0].name, 'ferrari')
   })
@@ -689,7 +689,7 @@ test.group('Relations | Refer Many', (group) => {
     User._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const userResult = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nik' }])
+    const userResult = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nik' }])
     const user1 = await User.find(userResult.insertedIds[0])
     const user2 = await User.find(userResult.insertedIds[1])
 
@@ -702,7 +702,7 @@ test.group('Relations | Refer Many', (group) => {
     await user2.posts().attach(post2._id)
     await user2.posts().attach(post2._id)
 
-    const users = await ioc.use('Database').collection('users').find()
+    const users = await ioc.use('MongoDatabase').collection('users').find()
     assert.lengthOf(users, 2)
     assert.lengthOf(users[0].post_ids, 1)
     assert.lengthOf(users[1].post_ids, 2)
@@ -754,12 +754,19 @@ test.group('Relations | Refer Many', (group) => {
     User._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const postResult = await ioc.use('Database').collection('posts').insert([{ title: 'Adonis 1' }, { title: 'Adonis 2' }])
-    await ioc.use('Database').collection('users').insert([
+    const postResult = await ioc.use('MongoDatabase').collection('posts').insert([{ title: 'Adonis 1' }, { title: 'Adonis 2' }])
+    await ioc.use('MongoDatabase').collection('users').insert([
       { username: 'virk', post_ids: [postResult.insertedIds[0]] }, { username: 'nik', post_ids: [postResult.insertedIds[0], postResult.insertedIds[1]] }
     ])
 
     const users = await User.with('posts').fetch()
+
+    assert.lengthOf(users.toJSON(), 2)
+    assert.lengthOf(users.first().toJSON().posts, 1)
+    assert.lengthOf(users.last().toJSON().posts, 2)
+  })
+})
+etch()
 
     assert.lengthOf(users.toJSON(), 2)
     assert.lengthOf(users.first().toJSON().posts, 1)
