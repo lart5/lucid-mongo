@@ -33,14 +33,14 @@ test.group('Providers', (group) => {
       .providers([path.join(__dirname, '../../providers/LucidMongoProvider')])
       .registerAndBoot()
 
-    assert.isDefined(ioc.use('Adonis/Src/Database'))
-    assert.isTrue(ioc._bindings['Adonis/Src/Database'].singleton)
+    assert.isDefined(ioc.use('Adonis/Src/MongoDatabase'))
+    assert.isTrue(ioc._bindings['Adonis/Src/MongoDatabase'].singleton)
 
-    assert.isDefined(ioc.use('Adonis/Src/Model'))
-    assert.isFalse(ioc._bindings['Adonis/Src/Model'].singleton)
+    assert.isDefined(ioc.use('Adonis/Src/MongoModel'))
+    assert.isFalse(ioc._bindings['Adonis/Src/MongoModel'].singleton)
 
-    assert.isDefined(ioc.use('Database'))
-    assert.isDefined(ioc.use('Model'))
+    assert.isDefined(ioc.use('MongoDatabase'))
+    assert.isDefined(ioc.use('MongoModel'))
   })
 
   test('register migrations provider', async (assert) => {

@@ -20,7 +20,7 @@ const { db, Models, Model } = require('../../')({
   testing: helpers.getConfig()
 })
 
-test.group('Database', (group) => {
+test.group('MongoDatabase', (group) => {
   group.before(async () => {
     await fs.ensureDir(path.join(__dirname, '../unit/tmp'))
     await helpers.createCollections(db)

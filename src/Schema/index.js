@@ -16,7 +16,7 @@
  * @binding Adonis/Src/Schema
  * @alias Schema
  * @group Database
- * @uses (['Adonis/Src/Database'])
+ * @uses (['Adonis/Src/MongoDatabase'])
  *
  * @class Schema
  * @constructor

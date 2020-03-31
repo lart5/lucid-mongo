@@ -23,7 +23,7 @@ const VanillaSerializer = require('../../src/LucidMongo/Serializers/Vanilla')
 
 test.group('Relations | Morph Many', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -31,22 +31,22 @@ test.group('Relations | Morph Many', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
-    await ioc.use('Adonis/Src/Database').collection('posts').delete()
-    await ioc.use('Adonis/Src/Database').collection('pictures').delete()
-    await ioc.use('Adonis/Src/Database').collection('parts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('posts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('pictures').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('parts').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -69,8 +69,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file.png' },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file.png' }
     ])
@@ -94,8 +94,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file.png' },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file.png' }
     ])
@@ -119,8 +119,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file.png' },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file.png' }
     ])
@@ -144,8 +144,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
@@ -169,7 +169,7 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const users = await User.query().with('pictures').fetch()
     const user = users.first()
     assert.equal(user.getRelated('pictures').size(), 0)
@@ -188,8 +188,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[1], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
@@ -213,8 +213,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[1], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
@@ -238,8 +238,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[1], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
@@ -270,12 +270,12 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
-    await ioc.use('Database').collection('parts').insert([
+    await ioc.use('MongoDatabase').collection('parts').insert([
       { parent_id: rsPicture.insertedIds[0], determiner: 'Picture', part_name: 'wheels' },
       { parent_id: rsPicture.insertedIds[0], determiner: 'Picture', part_name: 'engine' },
       { parent_id: rsPicture.insertedIds[1], determiner: 'Picture', part_name: 'wheels' },
@@ -308,12 +308,12 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
-    await ioc.use('Database').collection('parts').insert([
+    await ioc.use('MongoDatabase').collection('parts').insert([
       { parent_id: rsPicture.insertedIds[0], determiner: 'Picture', part_name: 'wheels' },
       { parent_id: rsPicture.insertedIds[0], determiner: 'Picture', part_name: 'engine' },
       { parent_id: rsPicture.insertedIds[1], determiner: 'Picture', part_name: 'wheels' },
@@ -346,12 +346,12 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file1.png', likes: 1000 },
       { parent_id: rs.insertedIds[0], determiner: 'User', file: 'images/file2.png', likes: 3000 }
     ])
-    await ioc.use('Database').collection('parts').insert([
+    await ioc.use('MongoDatabase').collection('parts').insert([
       { parent_id: rsPicture.insertedIds[0], determiner: 'Picture', part_name: 'wheels' },
       { parent_id: rsPicture.insertedIds[0], determiner: 'Picture', part_name: 'engine' },
       { parent_id: rsPicture.insertedIds[1], determiner: 'Picture', part_name: 'wheels' },
@@ -380,8 +380,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], name: 'mercedes', model: '1990' },
       { parent_id: rs.insertedIds[0], name: 'audi', model: '2001' },
       { parent_id: rs.insertedIds[1], name: 'audi', model: '2001' }
@@ -405,8 +405,8 @@ test.group('Relations | Morph Many', (group) => {
     Picture._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('pictures').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('pictures').insert([
       { parent_id: rs.insertedIds[0], name: 'mercedes', model: '1990' },
       { parent_id: rs.insertedIds[0], name: 'audi', model: '2001' },
       { parent_id: rs.insertedIds[1], name: 'audi', model: '2001' }
@@ -606,7 +606,7 @@ test.group('Relations | Morph Many', (group) => {
 
     await user.pictures().createMany([{ name: 'mercedes', model: '1992' }, { name: 'ferrari', model: '2002' }])
     await user.pictures().delete()
-    const pictures = await ioc.use('Database').collection('pictures').find()
+    const pictures = await ioc.use('MongoDatabase').collection('pictures').find()
     assert.lengthOf(pictures, 0)
   })
 
@@ -628,7 +628,7 @@ test.group('Relations | Morph Many', (group) => {
 
     await user.pictures().createMany([{ name: 'mercedes', model: '1992' }, { name: 'ferrari', model: '2002' }])
     await user.pictures().where('name', 'mercedes').delete()
-    const pictures = await ioc.use('Database').collection('pictures').find()
+    const pictures = await ioc.use('MongoDatabase').collection('pictures').find()
     assert.lengthOf(pictures, 1)
     assert.equal(pictures[0].name, 'ferrari')
   })

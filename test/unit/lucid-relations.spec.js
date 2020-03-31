@@ -23,7 +23,7 @@ const VanillaSerializer = require('../../src/LucidMongo/Serializers/Vanilla')
 
 test.group('Relations | HasOne', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -31,24 +31,24 @@ test.group('Relations | HasOne', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
-    await ioc.use('Adonis/Src/Database').collection('profiles').delete()
-    await ioc.use('Adonis/Src/Database').collection('pictures').delete()
-    await ioc.use('Adonis/Src/Database').collection('identities').delete()
-    await ioc.use('Adonis/Src/Database').collection('cars').delete()
-    await ioc.use('Adonis/Src/Database').collection('posts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('profiles').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('pictures').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('identities').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('cars').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('posts').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -71,8 +71,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const result = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert({ user_id: result.insertedIds[0], profile_name: 'virk' })
+    const result = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: result.insertedIds[0], profile_name: 'virk' })
     const user = new User()
     user._id = result.insertedIds[0]
     user.$persisted = true
@@ -97,7 +97,7 @@ test.group('Relations | HasOne', (group) => {
     const user = new User()
     user.username = 'virk'
     await user.save()
-    await ioc.use('Database').collection('profiles').insert({ user_id: user._id, profile_name: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: user._id, profile_name: 'virk' })
     const profile = await user.profile().fetch()
     assert.instanceOf(profile, Profile)
   })
@@ -117,7 +117,7 @@ test.group('Relations | HasOne', (group) => {
     Profile._bootIfNotBooted()
 
     const user = new User()
-    await ioc.use('Database').collection('profiles').insert({ user_id: 1, profile_name: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: 1, profile_name: 'virk' })
     try {
       await user.profile().fetch()
     } catch ({ message }) {
@@ -141,9 +141,9 @@ test.group('Relations | HasOne', (group) => {
     const user = new User()
     user.username = 'virk'
     await user.save()
-    await ioc.use('Database').collection('profiles').insert({ user_id: user._id, profile_name: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: user._id, profile_name: 'virk' })
     await user.profile().where('profile_name', 'virk').update({ profile_name: 'hv' })
-    const profile = await ioc.use('Database').collection('profiles').findOne()
+    const profile = await ioc.use('MongoDatabase').collection('profiles').findOne()
     assert.equal(profile.profile_name, 'hv')
   })
 
@@ -163,7 +163,7 @@ test.group('Relations | HasOne', (group) => {
     const user = new User()
     user.username = 'virk'
     await user.save()
-    await ioc.use('Database').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
     // await user.profile().increment('likes', 1)
   })
 
@@ -183,7 +183,7 @@ test.group('Relations | HasOne', (group) => {
     const user = new User()
     user.username = 'virk'
     await user.save()
-    await ioc.use('Database').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
     await user.load('profile')
     assert.instanceOf(user.$relations.profile, Profile)
   })
@@ -204,7 +204,7 @@ test.group('Relations | HasOne', (group) => {
     const user = new User()
     user.username = 'virk'
     await user.save()
-    await ioc.use('Database').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
     await user.load('profile', (builder) => {
       builder.where('profile_name', 'nikk')
     })
@@ -235,8 +235,8 @@ test.group('Relations | HasOne', (group) => {
     const user = new User()
     user.username = 'virk'
     await user.save()
-    await ioc.use('Database').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
-    await ioc.use('Database').collection('identities').insert({ user_id: user._id })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: user._id, profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('identities').insert({ user_id: user._id })
 
     await user.load('profile')
     await user.load('identities')
@@ -258,7 +258,7 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.all()
     const userInstances = users.rows
     const values = users.first().profile().mapValues(userInstances)
@@ -282,7 +282,7 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk', vid: 100 }, { username: 'nikk', vid: 101 }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk', vid: 100 }, { username: 'nikk', vid: 101 }])
     const users = await User.all()
     const userInstances = users.rows
     const values = users.first().profile().mapValues(userInstances)
@@ -304,7 +304,7 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.all()
 
     /**
@@ -346,7 +346,7 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
     const users = await User.all()
 
     /**
@@ -395,8 +395,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
 
     const result = await User.query().with('profile').fetch()
     assert.instanceOf(result.first().getRelated('profile'), Profile)
@@ -415,8 +415,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 },
       { user_id: rs.insertedIds[1], profile_name: 'nikk', likes: 2 }
     ])
@@ -442,8 +442,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 },
       { user_id: rs.insertedIds[1], profile_name: 'nikk', likes: 2 }
     ])
@@ -470,8 +470,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 },
       { user_id: rs.insertedIds[1], profile_name: 'nikk', likes: 2 }
     ])
@@ -503,12 +503,12 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 },
       { user_id: rs.insertedIds[1], profile_name: 'nikk', likes: 2 }
     ])
-    await ioc.use('Database').collection('avatars').insert([
+    await ioc.use('MongoDatabase').collection('avatars').insert([
       { user_id: rs.insertedIds[0], file: '/images/avatar.png' },
       { user_id: rs.insertedIds[1], file: '/images/avatar.png' }
     ])
@@ -541,8 +541,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 },
       { user_id: rs.insertedIds[1], profile_name: 'nikk', likes: 2 }
     ])
@@ -574,9 +574,9 @@ test.group('Relations | HasOne', (group) => {
     Profile._bootIfNotBooted()
     Picture._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsProfile = await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
-    await ioc.use('Database').collection('pictures').insert({ profile_id: rsProfile.insertedIds[0], storage_path: '/foo' })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsProfile = await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('pictures').insert({ profile_id: rsProfile.insertedIds[0], storage_path: '/foo' })
 
     const user = await User.query().with('profile.picture').fetch()
     assert.instanceOf(user.first().getRelated('profile').getRelated('picture'), Picture)
@@ -602,9 +602,9 @@ test.group('Relations | HasOne', (group) => {
     Profile._bootIfNotBooted()
     Picture._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsProfile = await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
-    await ioc.use('Database').collection('pictures').insert({ profile_id: rsProfile.insertedIds[0], storage_path: '/foo' })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsProfile = await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('pictures').insert({ profile_id: rsProfile.insertedIds[0], storage_path: '/foo' })
 
     const user = await User.query().with('profile.picture', (builder) => {
       builder.where('storage_path', '/bar')
@@ -632,9 +632,9 @@ test.group('Relations | HasOne', (group) => {
     Profile._bootIfNotBooted()
     Picture._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsProfile = await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
-    await ioc.use('Database').collection('pictures').insert({ profile_id: rsProfile.insertedIds[0], storage_path: '/foo' })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsProfile = await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('pictures').insert({ profile_id: rsProfile.insertedIds[0], storage_path: '/foo' })
 
     const user = await User.query().with('profile', (builder) => {
       builder.where('likes', '>', 3).with('picture')
@@ -655,8 +655,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('profiles').insert([
+    const rs = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('profiles').insert([
       { user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 },
       { user_id: rs.insertedIds[1], profile_name: 'nikk', likes: 2 }
     ])
@@ -681,8 +681,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
 
     const user = await User.query().with('profile').first()
     assert.instanceOf(user.getRelated('profile'), Profile)
@@ -701,8 +701,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
 
     const user = await User.query().with('profile').first()
     assert.equal(user.getRelated('profile').$parent, 'User')
@@ -722,8 +722,8 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Profile._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
 
     const user = await User.query().with('profile').fetch()
     assert.equal(user.first().getRelated('profile').$parent, 'User')
@@ -745,8 +745,8 @@ test.group('Relations | HasOne', (group) => {
     Car._bootIfNotBooted()
     User._bootIfNotBooted()
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: rs.insertedIds[0], profile_name: 'virk', likes: 3 })
 
     const user = await User.query().with('cars').first()
     assert.instanceOf(user.getRelated('cars'), VanillaSerializer)
@@ -912,7 +912,7 @@ test.group('Relations | HasOne', (group) => {
     await user.save()
     await user.profile().create({ profile_name: 'virk' })
     await user.profile().delete()
-    const profiles = await ioc.use('Database').collection('profiles').find()
+    const profiles = await ioc.use('MongoDatabase').collection('profiles').find()
     assert.lengthOf(profiles, 0)
   })
 
@@ -931,9 +931,9 @@ test.group('Relations | HasOne', (group) => {
     User._bootIfNotBooted()
     Post._bootIfNotBooted()
 
-    const rsPost = await ioc.use('Database').collection('posts').insert([{ title: 'Post #1' }, { title: 'Post #2' }])
-    const rsUser = await ioc.use('Database').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
-    await ioc.use('Database').collection('post_user').insert([{ user_id: rsUser.insertedIds[0], post_id: rsPost.insertedIds[1] }, { user_id: rsUser.insertedIds[1], post_id: rsPost.insertedIds[1] }])
+    const rsPost = await ioc.use('MongoDatabase').collection('posts').insert([{ title: 'Post #1' }, { title: 'Post #2' }])
+    const rsUser = await ioc.use('MongoDatabase').collection('users').insert([{ username: 'virk' }, { username: 'nikk' }])
+    await ioc.use('MongoDatabase').collection('post_user').insert([{ user_id: rsUser.insertedIds[0], post_id: rsPost.insertedIds[1] }, { user_id: rsUser.insertedIds[1], post_id: rsPost.insertedIds[1] }])
 
     const post = await Post.find(rsPost.insertedIds[1])
     const users = await post.users().paginate(1, 1)
@@ -970,10 +970,10 @@ test.group('Relations | HasOne', (group) => {
       model._bootIfNotBooted()
     })
 
-    const resultUser = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: resultUser.insertedIds[0], profile_name: 'virk', likes: 3 })
-    await ioc.use('Database').collection('cars').insert({ user_id: resultUser.insertedIds[0], name: 'Peugeot', model: '307' })
-    await ioc.use('Database').collection('identities').insert({ user_id: resultUser.insertedIds[0], is_active: true })
+    const resultUser = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: resultUser.insertedIds[0], profile_name: 'virk', likes: 3 })
+    await ioc.use('MongoDatabase').collection('cars').insert({ user_id: resultUser.insertedIds[0], name: 'Peugeot', model: '307' })
+    await ioc.use('MongoDatabase').collection('identities').insert({ user_id: resultUser.insertedIds[0], is_active: true })
 
     const identities = await Identity.query().with('user.car').with('user.profile').fetch()
     const user = identities.first().getRelated('user')
@@ -1015,11 +1015,11 @@ test.group('Relations | HasOne', (group) => {
       model._bootIfNotBooted()
     })
 
-    const resultUser = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    await ioc.use('Database').collection('profiles').insert({ user_id: resultUser.insertedIds[0], profile_name: 'virk', likes: 3 })
-    const resultCar = await ioc.use('Database').collection('cars').insert({ user_id: resultUser.insertedIds[0], name: 'Peugeot', model: '307' })
-    await ioc.use('Database').collection('identities').insert({ user_id: resultUser.insertedIds[0], is_active: true })
-    await ioc.use('Database').collection('parts').insert({ car_id: resultCar.insertedIds[0], part_name: 'Wheel drive' })
+    const resultUser = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('profiles').insert({ user_id: resultUser.insertedIds[0], profile_name: 'virk', likes: 3 })
+    const resultCar = await ioc.use('MongoDatabase').collection('cars').insert({ user_id: resultUser.insertedIds[0], name: 'Peugeot', model: '307' })
+    await ioc.use('MongoDatabase').collection('identities').insert({ user_id: resultUser.insertedIds[0], is_active: true })
+    await ioc.use('MongoDatabase').collection('parts').insert({ car_id: resultCar.insertedIds[0], part_name: 'Wheel drive' })
 
     const identities = await Identity.query().with('user.car').with('user.profile').with('user.car.parts').fetch()
     const user = identities.first().getRelated('user')

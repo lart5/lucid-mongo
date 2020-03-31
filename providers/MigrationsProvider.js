@@ -72,7 +72,7 @@ class MigrationsProvider extends ServiceProvider {
   _registerMigration () {
     this.app.singleton('Adonis/Src/Migration', (app) => {
       const Config = app.use('Adonis/Src/Config')
-      const Database = app.use('Adonis/Src/Database')
+      const Database = app.use('Adonis/Src/MongoDatabase')
       const Migration = require('../src/Migration')
       return new Migration(Config, Database)
     })

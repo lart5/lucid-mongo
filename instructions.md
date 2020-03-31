@@ -114,10 +114,10 @@ Edit the config/auth.js file for including the serializer. For example on the ap
 
 ## Usage 
 
-Once done you can access `Database` provider and run mongo queries as follows.
+Once done you can access `MongoDatabase` provider and run mongo queries as follows.
 
 ```js
-const Database = use('Database')
+const Database = use('MongoDatabase')
 
 await Database.collection('users').find()
 await Database.collection('users').paginate()

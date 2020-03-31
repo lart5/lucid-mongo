@@ -14,7 +14,7 @@ const GE = require('@adonisjs/generic-exceptions')
 const { resolver } = require('../../../lib/iocResolver')
 
 /**
- * This class is used internally by @ref('Model') to add
+ * This class is used internally by @ref('MongoModel') to add
  * hooks functionality.
  *
  * Hooks are executed in sequence for a given event.

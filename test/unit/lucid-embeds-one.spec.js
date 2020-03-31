@@ -22,7 +22,7 @@ const DatabaseManager = require('../../src/Database/Manager')
 
 test.group('Relations | Embeds one', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -30,19 +30,19 @@ test.group('Relations | Embeds one', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -66,7 +66,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
     const user = await User.first()
     assert.instanceOf(user, User)
     const email = user.email().fetch()
@@ -88,7 +88,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
     const user = await User.first()
     assert.instanceOf(user, User)
     const email = user.email().first()
@@ -107,7 +107,7 @@ test.group('Relations | Embeds one', (group) => {
 
     }
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', email: { _id: 1, address: 'example@gmail.com' } })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', email: { _id: 1, address: 'example@gmail.com' } })
     const user = await User.first()
     assert.instanceOf(user, User)
     const fn = () => user.email().paginate(1, 1)
@@ -128,7 +128,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
     const users = await User.with('email').fetch()
     const email = users.first().getRelated('email')
     assert.instanceOf(email, Email)
@@ -149,7 +149,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
     const user = await User.with('email').first()
     const email = user.getRelated('email')
     assert.instanceOf(email, Email)
@@ -170,7 +170,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk', email: { address: 'example@gmail.com' } })
     const users = await User.with('email').paginate()
     const email = users.first().getRelated('email')
     assert.instanceOf(email, Email)
@@ -191,7 +191,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.first()
     const email = new Email({ address: 'example@gmail.com' })
     await user.email().save(email)
@@ -222,7 +222,7 @@ test.group('Relations | Embeds one', (group) => {
     Email.addHook('beforeUpdate', fn)
     Email.addHook('afterUpdate', fn)
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.first()
     const email = await user.email().create({ address: 'example@gmail.com' })
     email.address = 'example2@gmail.com'
@@ -243,7 +243,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.first()
     const email = await user.email().create({ address: 'example@gmail.com' })
     assert.isNotNull(email._id)
@@ -274,7 +274,7 @@ test.group('Relations | Embeds one', (group) => {
     Email.addHook('beforeCreate', fn)
     Email.addHook('afterCreate', fn)
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.first()
     await user.email().create({ address: 'example@gmail.com' })
   })
@@ -293,7 +293,7 @@ test.group('Relations | Embeds one', (group) => {
     User._bootIfNotBooted()
     Email._bootIfNotBooted()
 
-    await ioc.use('Database').collection('users').insert({ username: 'virk' })
+    await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
     const user = await User.first()
     const email = await user.email().create({ address: 'example@gmail.com' })
     await user.email().delete(email._id)

@@ -45,20 +45,20 @@ test.group('Migration Rollback', (group) => {
       ]).registerAndBoot()
 
     await fs.ensureDir(path.join(__dirname, '../unit/tmp'))
-    await helpers.createCollections(ioc.use('Database'))
+    await helpers.createCollections(ioc.use('MongoDatabase'))
     setupResolver()
   })
 
   group.afterEach(async () => {
     ace.commands = {}
-    await ioc.use('Database').collection('adonis_schema').delete()
-    await ioc.use('Database').schema.dropCollectionIfExists('schema_users')
+    await ioc.use('MongoDatabase').collection('adonis_schema').delete()
+    await ioc.use('MongoDatabase').schema.dropCollectionIfExists('schema_users')
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Database'))
-    await ioc.use('Database').schema.dropCollectionIfExists('adonis_schema')
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('MongoDatabase'))
+    await ioc.use('MongoDatabase').schema.dropCollectionIfExists('adonis_schema')
+    ioc.use('MongoDatabase').close()
 
     try {
       await fs.remove(path.join(__dirname, '../unit/tmp'))
@@ -101,7 +101,7 @@ test.group('Migration Rollback', (group) => {
     await ace.call('migration:run')
     const result = await ace.call('migration:rollback')
     assert.deepEqual(result, { migrated: ['User'], status: 'completed', queries: undefined })
-    const migrations = await ioc.use('Database').collection('adonis_schema').find()
+    const migrations = await ioc.use('MongoDatabase').collection('adonis_schema').find()
     assert.lengthOf(migrations, 0)
   })
 

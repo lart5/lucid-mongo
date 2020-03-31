@@ -40,7 +40,7 @@ const proxyHandler = {
 
 /**
  * Query builder for the lucid models extended
- * by the @ref('Database') class.
+ * by the @ref('MongoDatabase') class.
  *
  * @class QueryBuilder
  * @constructor
@@ -53,7 +53,7 @@ class QueryBuilder {
     /**
      * Reference to database provider
      */
-    this.db = ioc.use('Adonis/Src/Database').connection(connection)
+    this.db = ioc.use('Adonis/Src/MongoDatabase').connection(connection)
 
     /**
      * mquery

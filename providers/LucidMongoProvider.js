@@ -14,7 +14,7 @@ const { ioc, ServiceProvider } = require('@adonisjs/fold')
 class LucidMongoProvider extends ServiceProvider {
   /**
    * Registering the database manager under
-   * Adonis/Src/Database namespace.
+   * Adonis/Src/MongoDatabase namespace.
    *
    * @method _registerDatabase
    *
@@ -23,17 +23,17 @@ class LucidMongoProvider extends ServiceProvider {
    * @private
    */
   _registerDatabase () {
-    this.app.singleton('Adonis/Src/Database', (app) => {
+    this.app.singleton('Adonis/Src/MongoDatabase', (app) => {
       const Config = app.use('Adonis/Src/Config')
       const Database = require('../src/Database/Manager')
       return new Database(Config)
     })
-    this.app.alias('Adonis/Src/Database', 'Database')
+    this.app.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
   }
 
   /**
    * Registering the lucid model under
-   * Adonis/Src/Model namespace.
+   * Adonis/Src/MongoModel namespace.
    *
    * @method _registerModel
    *
@@ -42,8 +42,8 @@ class LucidMongoProvider extends ServiceProvider {
    * @private
    */
   _registerModel () {
-    this.app.bind('Adonis/Src/Model', (app) => require('../src/LucidMongo/Model'))
-    this.app.alias('Adonis/Src/Model', 'Model')
+    this.app.bind('Adonis/Src/MongoModel', (app) => require('../src/LucidMongo/Model'))
+    this.app.alias('Adonis/Src/MongoModel', 'MongoModel')
   }
 
   /**
@@ -70,7 +70,7 @@ class LucidMongoProvider extends ServiceProvider {
   _addUniqueRule () {
     try {
       const { extend } = this.app.use('Adonis/Addons/Validator')
-      const Database = this.app.use('Adonis/Src/Database')
+      const Database = this.app.use('Adonis/Src/MongoDatabase')
       const validatorRules = new (require('../src/Validator'))(Database)
 
       /**

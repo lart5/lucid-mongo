@@ -30,7 +30,7 @@ class SeedDatabase extends Command {
    * @return {Array}
    */
   static get inject () {
-    return ['Adonis/Src/Helpers', 'Adonis/Src/Database']
+    return ['Adonis/Src/Helpers', 'Adonis/Src/MongoDatabase']
   }
 
   /**

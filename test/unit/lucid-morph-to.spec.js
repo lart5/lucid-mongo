@@ -24,7 +24,7 @@ const VanillaSerializer = require('../../src/LucidMongo/Serializers/Vanilla')
 
 test.group('Relations | Morph To', (group) => {
   group.before(async () => {
-    ioc.singleton('Adonis/Src/Database', function () {
+    ioc.singleton('Adonis/Src/MongoDatabase', function () {
       const config = new Config()
       config.set('database', {
         connection: 'testing',
@@ -32,21 +32,21 @@ test.group('Relations | Morph To', (group) => {
       })
       return new DatabaseManager(config)
     })
-    ioc.alias('Adonis/Src/Database', 'Database')
+    ioc.alias('Adonis/Src/MongoDatabase', 'MongoDatabase')
 
     await fs.ensureDir(path.join(__dirname, './tmp'))
-    await helpers.createCollections(ioc.use('Adonis/Src/Database'))
+    await helpers.createCollections(ioc.use('Adonis/Src/MongoDatabase'))
   })
 
   group.afterEach(async () => {
-    await ioc.use('Adonis/Src/Database').collection('users').delete()
-    await ioc.use('Adonis/Src/Database').collection('posts').delete()
-    await ioc.use('Adonis/Src/Database').collection('pictures').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('users').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('posts').delete()
+    await ioc.use('Adonis/Src/MongoDatabase').collection('pictures').delete()
   })
 
   group.after(async () => {
-    await helpers.dropCollections(ioc.use('Adonis/Src/Database'))
-    ioc.use('Database').close()
+    await helpers.dropCollections(ioc.use('Adonis/Src/MongoDatabase'))
+    ioc.use('MongoDatabase').close()
     try {
       await fs.remove(path.join(__dirname, './tmp'))
     } catch (error) {
@@ -84,9 +84,9 @@ test.group('Relations | Morph To', (group) => {
       return Picture
     })
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPost = await ioc.use('Database').collection('post').insert({ title: 'test post' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPost = await ioc.use('MongoDatabase').collection('post').insert({ title: 'test post' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
 
     const picture = await Picture.find(rsPicture.insertedIds[0])
     const pictureable = await picture.pictureable().first()
@@ -121,9 +121,9 @@ test.group('Relations | Morph To', (group) => {
       return Picture
     })
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPost = await ioc.use('Database').collection('post').insert({ title: 'test post' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPost = await ioc.use('MongoDatabase').collection('post').insert({ title: 'test post' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
 
     const picture = await Picture.find(rsPicture.insertedIds[0])
     const pictureable = await picture.pictureable().fetch()
@@ -158,9 +158,9 @@ test.group('Relations | Morph To', (group) => {
       return Picture
     })
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPost = await ioc.use('Database').collection('posts').insert({ title: 'test post' })
-    await ioc.use('Database').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPost = await ioc.use('MongoDatabase').collection('posts').insert({ title: 'test post' })
+    await ioc.use('MongoDatabase').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
     const pictures = await Picture.with('pictureable').fetch()
     assert.instanceOf(pictures, VanillaSerializer)
     const user = pictures.rows[0].getRelated('pictureable')
@@ -197,9 +197,9 @@ test.group('Relations | Morph To', (group) => {
       return Picture
     })
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPost = await ioc.use('Database').collection('post').insert({ title: 'test post' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPost = await ioc.use('MongoDatabase').collection('post').insert({ title: 'test post' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
 
     const picture = await Picture.find(rsPicture.insertedIds[0])
     try {
@@ -237,9 +237,9 @@ test.group('Relations | Morph To', (group) => {
       return Picture
     })
 
-    const rs = await ioc.use('Database').collection('users').insert({ username: 'virk' })
-    const rsPost = await ioc.use('Database').collection('post').insert({ title: 'test post' })
-    const rsPicture = await ioc.use('Database').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
+    const rs = await ioc.use('MongoDatabase').collection('users').insert({ username: 'virk' })
+    const rsPost = await ioc.use('MongoDatabase').collection('post').insert({ title: 'test post' })
+    const rsPicture = await ioc.use('MongoDatabase').collection('pictures').insert([{ parent_id: rs.insertedIds[0], determiner: 'User', path: '/foo' }, { parent_id: rsPost.insertedIds[0], determiner: 'Post', path: '/foo' }])
 
     const picture = await Picture.find(rsPicture.insertedIds[0])
     try {

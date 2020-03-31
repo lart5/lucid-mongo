@@ -17,12 +17,12 @@ const CE = require('../Exceptions')
 const proxyGet = require('../../lib/proxyGet')
 
 /**
- * DatabaseManager is a layer on top of @ref('Database') class. It
+ * DatabaseManager is a layer on top of @ref('MongoDatabase') class. It
  * manages a pool of different database connections and proxy all
  * Database methods, so that it's easier to work with them.
  *
  * ```js
- * const Database = use('Database')
+ * const Database = use('MongoDatabase')
  *
  * // making query on default connection
  * await Database.table('users')
@@ -31,7 +31,7 @@ const proxyGet = require('../../lib/proxyGet')
  * await Database.connection('mysql').table('users')
  * ```
  *
- * @binding Adonis/Src/Database
+ * @binding Adonis/Src/MongoDatabase
  * @singleton
  * @alias Database
  * @group Database
@@ -64,7 +64,8 @@ class DatabaseManager {
    * @throws {missingDatabaseConnection} If connection is not defined in config file.
    */
   connection (name) {
-    name = name || this.Config.get('database.connection')
+    //name = name || this.Config.get('database.connection')
+    name = 'mongodb'
     /**
      * Return connection if part of connection pool already
      */
